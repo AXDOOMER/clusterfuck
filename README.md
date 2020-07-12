@@ -18,17 +18,19 @@ I may add a way to dump the compiled code to an ELF soon.
 
 ## Optimization
 
-1. Instruction collapsing
+1. **Instruction collapsing**
 
 The instructions `+`, `-`, `<` and `>` can be sort of run-length encoded.
 
 Two consecutive `+` would mean executing `add [tape], 1` twice. Instead we generate a single `add [tape], 2` instruction. If there are 15 consecutive `>` for example, this saves a lot of instructions.
 
-When run with the Mandelbrot set renderer, this results in a ~3x speedup. This JIT compiled is also about 13% faster than the same program transcompiled to `C` and compiled with `GCC -O3`.
+When run with the Mandelbrot set renderer, this results in a ~3x speedup. This JIT compiler is also about 13% faster than the same program transcompiled to `C` and compiled with `GCC -O3`.
 
 ## Benchmarks
 
 Comming soon.
+
+Use: `perf stat -r 10 -d`
 
 ## Bugs
 
@@ -41,3 +43,14 @@ Comming soon.
 * [Tic Tac Toe with AI](https://github.com/mitxela/bf-tic-tac-toe/blob/master/tictactoe.bf)
 * [Mandelbrot set fractal viewer](https://github.com/frerich/brainfuck/blob/master/samples/mandelbrot.bf)
 
+## Screenshots
+
+### Hello world
+
+![Screenshot_2020-07-11_22-09-03](https://user-images.githubusercontent.com/6194072/87237366-76f49180-c3c3-11ea-89f7-126ac788e790.png)
+
+\*This is a development screenshot. All the debugging information has been removed.
+
+### Mandelbrot set fractal
+
+![Screenshot_2020-07-11_21-55-31](https://user-images.githubusercontent.com/6194072/87237367-76f49180-c3c3-11ea-957c-b7f925b502ed.png)

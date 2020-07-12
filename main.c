@@ -24,10 +24,8 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <stdio.h>
-#include <unistd.h>
 #include <stdlib.h>
 #include <sys/mman.h>
-#include <stdint.h>
 #include <string.h>
 
 #define TAPE_SIZE 30000
@@ -103,7 +101,7 @@ int main(int argc, char* argv[])
 	}
 	else
 	{
-		puts("Clusterfuck, a x64 JIT interpreter for brainfuck.");
+		puts("Clusterfuck, a x64 JIT compiler for brainfuck.");
 		puts("Copyright (c) 2020, Alexandre-Xavier Labonté-Lamoureux");
 		puts("Distributed under the BSD 2-Clause License.");
 
@@ -187,7 +185,7 @@ int main(int argc, char* argv[])
 	asm("mov %0, %%r8;"
 	    "call *%1;"
 	     :
-	     : "r" ((uint64_t)tape), "r" ((uint64_t)code)
+	     : "r" (tape), "r" (code)
 	     : "r8");
 }
 

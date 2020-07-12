@@ -26,7 +26,7 @@ When run with the Mandelbrot set renderer, this optimization results in a ~3x sp
 
 ## Benchmarks
 
-Comming soon.
+Coming soon.
 
 Use: `perf stat -r 10 -d`
 

@@ -8,6 +8,14 @@ More about the language here: https://esolangs.org/wiki/Brainfuck
 
 `./clusterfuck program.bf`
 
+I may add a way to dump the compiled code to an ELF soon.
+
+# Specs
+
+* Tape size: 30000 cells
+* Cell size: 8 bits (1 byte)
+* Invalid brainfuck characters are ignored
+
 ## Optimization
 
 1. Instruction collapsing
@@ -21,6 +29,12 @@ When run with the Mandelbrot set renderer, this results in a ~3x speedup. This J
 ## Benchmarks
 
 Comming soon.
+
+## Bugs
+
+* Not handling out of bounds on the tape or malformed programs (e.g. not an equal number of `[` and `]`)
+* Only supports a same command 255 times (for `+`, `-`, `<` and `>`)
+* Not portable -- Only works on Linux with a x64 CPU for now
 
 ## Programs to test it out!
 

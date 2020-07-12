@@ -1,2 +1,2 @@
 all:
-	gcc main.c -o clusterfuck
+	gcc main.c -Wall -Wextra -o clusterfuck

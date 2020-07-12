@@ -1,4 +1,5 @@
 Copyright (c) 2020, Alexandre-Xavier Labonté-Lamoureux
+
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without

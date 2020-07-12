@@ -36,6 +36,7 @@ Use: `perf stat -r 10 -d`
 
 * [Tic Tac Toe with AI](https://github.com/mitxela/bf-tic-tac-toe/blob/master/tictactoe.bf)
 * [Mandelbrot set fractal viewer](https://github.com/frerich/brainfuck/blob/master/samples/mandelbrot.bf)
+* [Towers of Hanoi](http://www.clifford.at/bfcpu/hanoi.bf)
 
 ## Screenshots
 

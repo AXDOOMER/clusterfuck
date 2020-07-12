@@ -18,13 +18,11 @@ I may add a way to dump the compiled code to an ELF soon.
 
 ## Optimization
 
-1. **Instruction collapsing**
+The instructions `+`, `-`, `<` and `>` can be sort of run-length encoded. Let's call it instruction collapsing.
 
-The instructions `+`, `-`, `<` and `>` can be sort of run-length encoded.
+Two consecutive `+` would mean executing the assembly `add [tape], 1` twice. Instead the compiler generates a single `add [tape], 2` instruction. If there are 15 consecutive `>` for example, this saves a lot of instructions and makes the code much smaller.
 
-Two consecutive `+` would mean executing `add [tape], 1` twice. Instead we generate a single `add [tape], 2` instruction. If there are 15 consecutive `>` for example, this saves a lot of instructions.
-
-When run with the Mandelbrot set renderer, this results in a ~3x speedup. This JIT compiler is also about 13% faster than the same program transcompiled to `C` and compiled with `GCC -O3`.
+When run with the Mandelbrot set renderer, this optimization results in a ~3x speedup. This JIT compiler is also about 13% faster than the same program transcompiled to `C` and compiled with `GCC -O3`.
 
 ## Benchmarks
 

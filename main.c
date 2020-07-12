@@ -31,7 +31,7 @@
 #include <string.h>
 
 #define TAPE_SIZE 30000
-#define MAX_CODE_SIZE 65536
+#define MAX_CODE_SIZE 65536*2
 #define STACK_SIZE 256
 
 unsigned int fetch_similar(unsigned char command, unsigned int index, char* program, unsigned int program_size)
@@ -50,7 +50,11 @@ unsigned int fetch_similar(unsigned char command, unsigned int index, char* prog
 
 void make_collapse(unsigned char command, unsigned int* index, char* program, unsigned int program_size, char* addr, char* opcodes)
 {
-	unsigned char count = fetch_similar(command, *index, program, program_size);
+	unsigned int count = fetch_similar(command, *index, program, program_size);
+
+	// Cap this variable because the maximum value that can be encoded is 0xFF.
+	if (count > 0xFF)
+		count = 0xFF;
 
 	memcpy(addr, opcodes, 3);
 	memcpy(addr + 3, &count, 1);
@@ -173,7 +177,7 @@ int main(int argc, char* argv[])
 		}
 	}
 
-	// end this with a "ret"
+	// End this with a "ret"
 	memcpy(addr, "\xc3", 1);
 	addr += 1;
 

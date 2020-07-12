@@ -32,12 +32,6 @@ Comming soon.
 
 Use: `perf stat -r 10 -d`
 
-## Bugs
-
-* Not handling out of bounds on the tape or malformed programs (e.g. not an equal number of `[` and `]`)
-* Only supports a same command 255 times (for `+`, `-`, `<` and `>`)
-* Not portable -- Only works on Linux with a x64 CPU for now
-
 ## Programs to test it out!
 
 * [Tic Tac Toe with AI](https://github.com/mitxela/bf-tic-tac-toe/blob/master/tictactoe.bf)
@@ -54,3 +48,9 @@ Use: `perf stat -r 10 -d`
 ### Mandelbrot set fractal
 
 ![Screenshot_2020-07-11_21-55-31](https://user-images.githubusercontent.com/6194072/87237367-76f49180-c3c3-11ea-957c-b7f925b502ed.png)
+
+## Bugs
+
+* Not handling out of bounds on the tape or malformed programs (e.g. not an equal number of `[` and `]`)
+* Only supports a same command 255 times (for `+`, `-`, `<` and `>`)
+* Not portable -- Only works on Linux with a x64 CPU for now

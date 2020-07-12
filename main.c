@@ -1,28 +1,27 @@
-/*
-	Copyright (c) 2020, Alexandre-Xavier Labonté-Lamoureux
-	All rights reserved.
-
-	Redistribution and use in source and binary forms, with or without
-	modification, are permitted provided that the following conditions are met:
-
-	1. Redistributions of source code must retain the above copyright notice, this
-	   list of conditions and the following disclaimer.
-
-	2. Redistributions in binary form must reproduce the above copyright notice,
-	   this list of conditions and the following disclaimer in the documentation
-	   and/or other materials provided with the distribution.
-
-	THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-	ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-	WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-	DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
-	ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-	(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-	LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-	ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-	(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-	SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+// Copyright (c) 2020, Alexandre-Xavier Labonté-Lamoureux
+//
+// All rights reserved.
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
+//
+// 1. Redistributions of source code must retain the above copyright notice, this
+//    list of conditions and the following disclaimer.
+//
+// 2. Redistributions in binary form must reproduce the above copyright notice,
+//    this list of conditions and the following disclaimer in the documentation
+//    and/or other materials provided with the distribution.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+// ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+// DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+// ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+// (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+// LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+// ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+// SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <stdio.h>
 #include <unistd.h>
@@ -31,29 +30,14 @@
 #include <stdint.h>
 #include <string.h>
 
-void dumpbytes(unsigned char *data, int count)
-{
-	int i;
+#define TAPE_SIZE 30000
+#define MAX_CODE_SIZE 65536
+#define STACK_SIZE 256
 
-	printf("\n");
-
-	for (i = 0; i < count; i++)
-	{
-		if (i % 32 == 0)
-		{
-			printf("\n");
-		}
-
-		printf("%02X ", data[i]);
-	}
-
-	printf("\n\n");
-}
-
-unsigned int fetch_similar(unsigned char command, unsigned int index, unsigned char* program)
+unsigned int fetch_similar(unsigned char command, unsigned int index, char* program, unsigned int program_size)
 {
 	int count = 0;
-	for (unsigned int i = index; i < strlen(program); i++)
+	for (unsigned int i = index; i < program_size; i++)
 	{
 		if (program[i] == command)
 			count++;
@@ -64,38 +48,33 @@ unsigned int fetch_similar(unsigned char command, unsigned int index, unsigned c
 	return count;
 }
 
-/*void cpyasm(void* destination, const void* source, size_t num)
+void make_collapse(unsigned char command, unsigned int* index, char* program, unsigned int program_size, char* addr, char* opcodes)
 {
-	memcpy(destination, source, num);
-}*/
+	unsigned char count = fetch_similar(command, *index, program, program_size);
 
-#define TAPE_SIZE 30000
+	memcpy(addr, opcodes, 3);
+	memcpy(addr + 3, &count, 1);
+
+	*index += count - 1;
+}
 
 int main(int argc, char* argv[])
 {
-	//char tape[TAPE_SIZE] = {0};
 	unsigned char* tape = malloc(TAPE_SIZE);
 	memset(tape, 0, TAPE_SIZE);
 
-	unsigned char* program = "++++++++++[>+++++++>++++++++++>+++>+<<<<-]>++.>+.+++++++..+++.>++.<<+++++++++++++++.>.+++.------.--------.>+.>.";
-	const unsigned int PROGRAM_SIZE = 65536;
-
-	unsigned int STACK_SIZE = 256;
+	char* program = NULL;
+	unsigned int program_size = 0;
 
 	unsigned int loop_start_index = 0;
-	unsigned char* loop_start[STACK_SIZE];
+	char* loop_start[STACK_SIZE];
 
-	//unsigned int loop_end_index = 0;
-	//unsigned int loop_end[STACK_SIZE];
+	char* code = mmap(0, MAX_CODE_SIZE, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_ANON | MAP_PRIVATE, -1, 0);
 
-	void* ptr = mmap(0, PROGRAM_SIZE, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
-
-	printf("mmap area starts at: 0x%x\n", ptr);
-
-	if (ptr == MAP_FAILED)
+	if (code == MAP_FAILED)
 	{
 		puts("mmap failed.");
-		return 1;
+		return 3;
 	}
 
 	if (argc > 1)
@@ -104,83 +83,54 @@ int main(int argc, char* argv[])
 		if (fp != NULL)
 		{
 			fseek(fp, 0, SEEK_END);
-			unsigned int filesize = ftell(fp);
+			program_size = ftell(fp);
 			rewind(fp);
 
-			program = malloc(filesize);
+			program = malloc(program_size);
 
-			fread(program, 1, filesize, fp);
+			fread(program, 1, program_size, fp);
 			fclose(fp);
 		}
+		else
+		{
+			puts("Couldn't open program.");
+			return 2;
+		}
+	}
+	else
+	{
+		puts("Clusterfuck, a x64 JIT interpreter for brainfuck.");
+		puts("Copyright (c) 2020, Alexandre-Xavier Labonté-Lamoureux");
+		puts("Distributed under the BSD 2-Clause License.");
+
+		printf("\nUsage: %s program.bf\n", argv[0]);
+		return 1;
 	}
 
-	unsigned char* addr = ptr;
-	unsigned char count;
-	unsigned int pointer;
+	char* addr = code;
+	unsigned int offset;
 
-	memcpy(addr, "\x90", 1);
-	addr += 1;
-
-	for (unsigned i = 0; i < strlen(program); i++)
+	for (unsigned i = 0; i < program_size; i++)
 	{
 		switch (program[i])
 		{
 		case '>':
-			count = fetch_similar('>', i, program);
-			if (count > 1)
-			{
-//				printf("found %d similar instructions.\n", count);
-				memcpy(addr, "\x49\x83\xc0", 3);
-				memcpy(addr + 3, &count, 1);
-				addr += 4;
-
-				i += count - 1;
-			}
-			else
-			{
-				memcpy(addr, "\x49\x83\xc0\x01", 4);
-				addr += 4;
-			}
+			make_collapse('>', &i, program, program_size, addr, "\x49\x83\xc0");
+			addr += 4;
 			break;
 
 		case '<':
-			count = fetch_similar('<', i, program);
-			if (count > 1)
-			{
-//				printf("found %d similar instructions.\n", count);
-				memcpy(addr, "\x49\x83\xe8", 3);
-				memcpy(addr + 3, &count, 1);
-				addr += 4;
-
-				i += count - 1;
-			}
-			else
-			{
-				memcpy(addr, "\x49\x83\xe8\x01", 4);
-				addr += 4;
-			}
+			make_collapse('<', &i, program, program_size, addr, "\x49\x83\xe8");
+			addr += 4;
 			break;
 
 		case '+':
-			count = fetch_similar('+', i, program);
-			if (count > 1)
-			{
-//				printf("found %d similar instructions.\n", count);
-				memcpy(addr, "\x41\x80\x00", 3);
-				memcpy(addr + 3, &count, 1);
-				addr += 4;
-
-				i += count - 1;
-			}
-			else
-			{
-				memcpy(addr, "\x41\x80\x00\x01", 4);
-				addr += 4;
-			}
+			make_collapse('+', &i, program, program_size, addr, "\x41\x80\x00");
+			addr += 4;
 			break;
 
 		case '-':
-			memcpy(addr, "\x41\x80\x28\x01", 4);
+			make_collapse('-', &i, program, program_size, addr, "\x41\x80\x28");
 			addr += 4;
 			break;
 
@@ -194,34 +144,28 @@ int main(int argc, char* argv[])
 			addr += 26;
 			break;
 
-		// control flow stuff
+		// looooooooooops
 		case '[':
-			// last 4 bytes are the jump addr
 			memcpy(addr, "\x41\x80\x38\x00\x0f\x84\x00\x00\x00\x00", 10);
 
-			printf("loop start at 0x%x.\n", addr);
-			loop_start[loop_start_index] = addr;	// addr is the start of the test to see if the tape is 0
-			loop_start_index++;			// do +6 to get addr where the jmp addr must be replaced
+			// Must come back later and set the last four bytes to the correct address
+			loop_start[loop_start_index] = addr;
+			loop_start_index++;
 
 			addr += 10;
 			break;
 
 		case ']':
-			// last 4 bytes are the jump addr
-			memcpy(addr, "\xe9\x00\x00\x00\x00", 5);	// addr+1 must be later set to matching [ addr
+			memcpy(addr, "\xe9\x00\x00\x00\x00", 5);
 
+			// Get the address from the stack. Compute the jump offset for the `[` part.
 			loop_start_index--;
-								pointer = addr - loop_start[loop_start_index] - 5;
-			memcpy(loop_start[loop_start_index] + 6, &pointer, 4);	// write address to jump inside [
+			offset = addr - loop_start[loop_start_index] - 5;
+			memcpy(loop_start[loop_start_index] + 6, &offset, 4);
 
-			pointer = loop_start[loop_start_index] - addr - 5;
-			//unsigned int relative = addr - loop_start[loop_start_index];
-			printf("writing addr at 0x%x for loop, relative jmp 0x%x (%d bytes).\n", addr + 1, pointer, pointer);
-			
-			memcpy(addr + 1, &pointer, 4);	// write address to jump inside this ]
-
-			if (loop_start_index < 0)
-				puts("FUCKER!!!!");
+			// Use the same address from the stack to compute the jump from `]` to `[`.
+			offset = loop_start[loop_start_index] - addr - 5;
+			memcpy(addr + 1, &offset, 4);
 
 			addr += 5;
 			break;
@@ -233,76 +177,13 @@ int main(int argc, char* argv[])
 	memcpy(addr, "\xc3", 1);
 	addr += 1;
 
-//	printf("mmap area starts at: 0x%x\n", ptr);
-	printf("end of code: %x\n", addr);
+	// BUG: Remove this printf or make it empty and the program won't display anything
+	printf("compiled program size is %ld bytes, running...\n", addr - code);
 
-	unsigned int shellcodesize = addr - (unsigned char*)ptr;
-
-	printf("size of shellcode: 0x%x (%d bytes)\n", shellcodesize, shellcodesize);
-
-	dumpbytes(ptr, shellcodesize);
-
-	//asm(".byte 0xcc");
-
-	printf("jumping into shellcode.\n");
-
-	asm(/*".intel_syntax;"*/
-		"mov %0, %%r8;"
-		"call *%1;"
-		/*".att_syntax;"*/
-		 :
-		 : "r" ((uint64_t)tape), "r" ((uint64_t)ptr)
-		 : );
+	asm("mov %0, %%r8;"
+	    "call *%1;"
+	     :
+	     : "r" ((uint64_t)tape), "r" ((uint64_t)code)
+	     : "r8");
 }
-
-/*
-Pour le pointeur sur le tape, choisir un registre pas utilisé lors des syscalls.
-
-> 
-add r8, 1               ; 49 83 c0 01
-
-<
-sub r8, 1               ; 49 83 e8 01
-
-+
-add byte ptr [r8], 1    ; 41 80 00 01
-                        ; 01 c'est l'adresse. on peut pas faire > 0xff
-
--
-sub byte ptr [r8], 1    ; 41 80 28 01
-                        ; 01 c'est l'adresse. on peut pas faire > 0xff
-
-.
-mov rax, 1  ; syscall write            48 c7 c0 01 00 00 00
-mov rdi, 1  ; stdout                   48 c7 c7 01 00 00 00
-mov rsi, r8 ; address of char          4c 89 c6
-mov rdx, 1  ; number of bytes          48 c7 c2 01 00 00 00
-syscall                                0f 05
-
-,
-mov rax, 0  ; syscall read             48 c7 c0 00 00 00 00
-mov rdi, 0  ; stdin                    48 c7 c7 00 00 00 00
-mov rsi, r8 ; address to write to      4c 89 c6
-mov rdx, 1  ; number of bytes          48 c7 c2 01 00 00 00
-syscall                                0f 05
-
-
-[
-cmp byte ptr [r8], 0                   41 80 38 00
-je 11223344                            0f 84 00 00 00 00
-; faut sauter après l'adresse du ] fermant  (qui fait jmp)
-
-
-]
-jmp 11223344                           e9 00 00 00 00
-; sauter au début des instructions du [ (qui fait cmp...)
-
-
-
-
-
-faire un `ret` quand on a fini
-
-
-*/
 

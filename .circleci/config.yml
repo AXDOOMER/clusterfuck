@@ -1,0 +1,26 @@
+version: 2.1
+
+orbs:
+  python: circleci/python@0.3.0
+
+jobs:
+  build:
+    docker:
+      - image: circleci/python:3.7
+    steps:
+      - checkout
+
+      - run: sudo apt-get -y install gcc build-essential make autoconf cppcheck
+
+      - run:
+          name: Cppcheck
+          command: cppcheck *.c 
+
+      - run:
+          name: Execute Makefile
+          command: make
+
+workflows:
+  main:
+    jobs:
+      - build

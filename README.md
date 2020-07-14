@@ -1,5 +1,7 @@
 # clusterfuck
 
+[![CircleCI](https://circleci.com/gh/AXDOOMER/clusterfuck.svg?style=svg)](https://circleci.com/gh/AXDOOMER/clusterfuck)
+
 Clusterfuck is an optimizing x64 JIT compiler for brainfuck, an esoteric programming language. 
 
 More about the language here: https://esolangs.org/wiki/Brainfuck

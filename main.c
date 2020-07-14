@@ -137,7 +137,7 @@ int main(int argc, char* argv[])
 			break;
 
 		case '.':
-			memcpy(addr, "\x48\xc7\xc0\x01\x00\x00\x00\x48\xc7\xc0\x01\x00\x00\x00\x4c\x89\xc6\x48\xc7\xc2\x01\x00\x00\x00\x0f\x05", 26);
+			memcpy(addr, "\x48\xc7\xc0\x01\x00\x00\x00\x48\xc7\xc7\x01\x00\x00\x00\x4c\x89\xc6\x48\xc7\xc2\x01\x00\x00\x00\x0f\x05", 26);
 			addr += 26;
 			break;
 
@@ -178,9 +178,6 @@ int main(int argc, char* argv[])
 	// End this with a "ret"
 	memcpy(addr, "\xc3", 1);
 	addr += 1;
-
-	// BUG: Remove this printf or make it empty and the program won't display anything
-	printf("compiled program size is %ld bytes, running...\n", addr - code);
 
 	asm("mov %0, %%r8;"
 	    "call *%1;"

@@ -54,5 +54,4 @@ Use: `perf stat -r 10 -d`
 
 * Not handling out of bounds on the tape or malformed programs (e.g. not an equal number of `[` and `]`)
 * It has static limits for the code size and stack size
-* There's a `printf` before the compiled code is called because else the `write` syscall doesn't work
 * Not portable -- Only works on Linux with a x64 CPU for now

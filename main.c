@@ -32,7 +32,7 @@
 #define MAX_CODE_SIZE 65536*2
 #define STACK_SIZE 256
 
-unsigned int fetch_similar(unsigned char command, unsigned int index, char* program, unsigned int program_size)
+unsigned int count_consecutive(char command, unsigned int index, char* program, unsigned int program_size)
 {
 	int count = 0;
 	for (unsigned int i = index; i < program_size; i++)
@@ -46,9 +46,9 @@ unsigned int fetch_similar(unsigned char command, unsigned int index, char* prog
 	return count;
 }
 
-void make_collapse(unsigned char command, unsigned int* index, char* program, unsigned int program_size, char* addr, char* opcodes)
+void make_collapse(char command, unsigned int* index, char* program, unsigned int program_size, char* addr, char* opcodes)
 {
-	unsigned int count = fetch_similar(command, *index, program, program_size);
+	unsigned int count = count_consecutive(command, *index, program, program_size);
 
 	// Cap this variable because the maximum value that can be encoded is 0xFF.
 	if (count > 0xFF)

@@ -46,7 +46,7 @@ unsigned int count_consecutive(char command, unsigned int index, char* program, 
 	return count;
 }
 
-void make_collapse(char command, unsigned int* index, char* program, unsigned int program_size, char* addr, char* opcodes)
+void make_collapse(char command, unsigned int* index, char* program, unsigned int program_size, void* addr, char* opcodes)
 {
 	unsigned int count = count_consecutive(command, *index, program, program_size);
 
@@ -62,16 +62,16 @@ void make_collapse(char command, unsigned int* index, char* program, unsigned in
 
 int main(int argc, char* argv[])
 {
-	unsigned char* tape = malloc(TAPE_SIZE);
+	void* tape = malloc(TAPE_SIZE);
 	memset(tape, 0, TAPE_SIZE);
 
 	char* program = NULL;
 	unsigned int program_size = 0;
 
 	unsigned int loop_start_index = 0;
-	char* loop_start[STACK_SIZE];
+	void* loop_start[STACK_SIZE];
 
-	char* code = mmap(0, MAX_CODE_SIZE, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_ANON | MAP_PRIVATE, -1, 0);
+	void* code = mmap(0, MAX_CODE_SIZE, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_ANON | MAP_PRIVATE, -1, 0);
 
 	if (code == MAP_FAILED)
 	{
@@ -109,7 +109,7 @@ int main(int argc, char* argv[])
 		return 1;
 	}
 
-	char* addr = code;
+	void* addr = code;
 	unsigned int offset;
 
 	for (unsigned i = 0; i < program_size; i++)
